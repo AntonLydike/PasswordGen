@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# import functions
+. src/dict.sh
+. src/random.sh
+
+# declare defaults
+dictPath=dictionaries/
+forceDict=FALSE
+delimiter='-'
+
+declare -i length=4
+declare -i verbose=0
+declare -i copyToClipboard=0
+
+# Code lightly adapted from https://stackoverflow.com/a/14203146
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+    --dictpath)
+    dictPath="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    --dictionary)
+    forceDict="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -l|--length)
+    length="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -d|--del|--delimiter)
+    delimiter="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    --verbose)
+    verbose=1
+    shift # past argument
+    ;;
+    --add-dictionary)
+    addDictionary "$2"
+    exit 0;
+    ;;
+    --remove-dictionary)
+    # import dictionaries
+    importDicts
+    # check if dictionaries were changed
+    refreshDicts
+    # remove dictionary
+    removeDictionary "$2"
+    exit 0;
+    ;;
+    -c|--clip)
+    copyToClipboard=1
+    shift # past argument
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+  esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+isanumber='^[0-9]+$'
+if ! [[ $length =~ $isanumber && $length > 0 ]] ; then
+  echo "error: Length must be a number > 0" >&2; exit 1
+fi
+if ! [[ $forceDict == 'FALSE' || $length =~ $re ]] ; then
+  echo "error: Forced dictionary must be a number" >&2; exit 1
+fi
+
+# import dictionaries
+importDicts
+# check if dictionaries were changed
+refreshDicts
+
+if (( $forceDict < 0 || $forceDict > $dictCount)); then
+  echo "error: Invalid dictionary ($forceDict), must be in range [0,$dictCount]" >&2; exit 1
+fi;
+
+if (( "$verbose" == 1 )); then
+  getTotalWordCount
+
+  echo "Word pool size: $totalWordCount";
+fi;
+
+getRandomWords $length $delimiter
+
+if (( "$copyToClipboard" == 1 )); then
+	printf "$randomWords" | xclip -selection c;
+fi;
+
+echo "$randomWords";
