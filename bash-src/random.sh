@@ -1,17 +1,9 @@
-
 # generates a random 31 bit number (between 0 and around 2147483648), stores it
 # in $random. This should be fine if the dictionaries don't get exceedingly
 # gigantic
 function getRandom() {
-	local num=$(od -A n -t d -N 4 /dev/urandom | tr -d ' ');
-
-	# make sure only positive integers are generated
-	# this gives us just 31 bits of randomness thought :(
-	if (( "$num" < 0 )); then
-		num=$((num*(-1)));
-	fi;
-
-	random=$num;
+  # get an 8 byte (64 bit) unsigned int from /dev/urandom, remove leading whitespace
+	random=$(od -A n -t u8 -N 8 /dev/urandom | tr -d ' ');
 }
 
 # gets a random word from dictionary with number in arg 1
@@ -30,12 +22,6 @@ function getRandomWordFromDict() {
 	getNthWord $dict $line;
 }
 
-# chooses a random dictionary
-function chooseDict() {
-	getRandom
-
-	randomDict=$((random%dictCount));
-}
 
 # get a random word from a random dictionary (can be overwritten by $forceDict)
 function getRandomWord() {
@@ -48,7 +34,7 @@ function getRandomWord() {
 	getRandomWordFromDict $randomDict
 }
 
-# get $1 random words, separated by $2
+# get $1 random words, separated by $2 (needs totalWordCount from getTotalWordCount())
 function getRandomWords() {
 	local count=$1
 	local delimiter=$2

@@ -80,14 +80,14 @@ fi
 importDicts
 # check if dictionaries were changed
 refreshDicts
+# get totalWordCount
+getTotalWordCount
 
 if (( $forceDict < 0 || $forceDict > $dictCount)); then
   echo "error: Invalid dictionary ($forceDict), must be in range [0,$dictCount]" >&2; exit 1
 fi;
 
 if (( "$verbose" == 1 )); then
-  getTotalWordCount
-
   echo "Word pool size: $totalWordCount";
 fi;
 
