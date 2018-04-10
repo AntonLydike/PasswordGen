@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# check for bc
+command -v bc >/dev/null 2>&1 || { echo >&2 "This generator requires bc to run. Please install it and try again."; exit 1; }
+
 # import functions
-. src/dict.sh
-. src/random.sh
+. bash-src/dict.sh
+. bash-src/random.sh
 
 # declare defaults
 dictPath=dictionaries/

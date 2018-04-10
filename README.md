@@ -2,6 +2,8 @@
 
 Generate passwords from dictionaries.
 
+The Bash implementation requires bc, The C one needs openssl (`libssl-dev` for example) to compile
+
 ## Usage
 
 Flags:
@@ -27,10 +29,9 @@ At the moment, there are two dictionaries in the `/dictionaries` folder
 ## How this program chooses a random word from the Dictionaries
 
   1. Generate a random integer
-    - bash: `od -A n -t u8 -N 8 /dev/urandom | tr -d ' '` (unsigned 64 bit integer from /dev/urandom)
-    - C:
-  2. calculate rand % totalWordCount
-  3. find out which dictionary has the word in it
-  4. get that word from that dictionary
+    - bash: `od -A n -t u8 -N 8 /dev/urandom | tr -d ' '`, then calculate `rand % totalWordCount` (unsigned 64 bit integer from /dev/urandom)
+    - C: Generate a random number between 0 and totalWordCount with `randombytes_uniform(uint64_t totalWordCount)`
+  2. find out which dictionary has the word in it
+  3. get that word from that dictionary
 
 steps 2 and 3 are different if a specific dictionary is forced.

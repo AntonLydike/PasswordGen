@@ -118,7 +118,7 @@ function writeDicts() {
 }
 
 # gets the $2th word from the dictionary $1
-function getNthWord() {
+function getNthWordFromDict() {
 	local dict=$1;
 	local line=$2;
 
@@ -127,6 +127,10 @@ function getNthWord() {
 	fi;
 
 	local path="$dictPath/${dicts[$dict,0]}"
+
+  # sed counts from 1. ugh...
+  line=$((line+1))
+
 	word=$(sed "${line}q;d" "$path" | tr -d '\r')
 }
 

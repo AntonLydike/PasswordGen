@@ -1,37 +1,48 @@
-# generates a random 31 bit number (between 0 and around 2147483648), stores it
-# in $random. This should be fine if the dictionaries don't get exceedingly
-# gigantic
+# some functions to work with big numbers, uses bc
+function mod() {
+  mod_result=$(echo "$1%$2" | bc)
+}
+function minus() {
+  minus_result=$(echo "$1-$2" | bc)
+}
+function lowerThan() {
+  return $(echo "$1>=$2" | bc)
+}
+
+# generates a random 64 bit number and stores it in $random.
 function getRandom() {
   # get an 8 byte (64 bit) unsigned int from /dev/urandom, remove leading whitespace
 	random=$(od -A n -t u8 -N 8 /dev/urandom | tr -d ' ');
 }
 
-# gets a random word from dictionary with number in arg 1
-function getRandomWordFromDict() {
-	local dict=$1;
-	local dictSize=${dicts[$dict,1]};
-	# number of lines - 1
-	dictSize=$((dictSize));
-
-	# get a random line number
-	getRandom;
-	local line=$((random%dictSize));
-	# sed starts counting at 1. Ugh.
-	line=$((line+1));
-
-	getNthWord $dict $line;
-}
-
-
 # get a random word from a random dictionary (can be overwritten by $forceDict)
 function getRandomWord() {
-	if [[ "$forceDict" == 'FALSE' ]]; then
-		chooseDict
+  local remainder
+  local dict
+
+  getRandom
+
+  if [[ "$forceDict" == 'FALSE' ]]; then
+    # if no dictionary was forced, calc mod totalWordCount
+    mod $random $totalWordCount
+    random=$mod_result
+    remainder=$random
+
+    # find dict containing that word
+    dict=0
+    while ( lowerThan ${dicts[$dict,1]} $remainder ); do
+      minus $remainder ${dicts[$dict,1]}
+      remainder=$minus_result
+      dict=$((dict + 1))
+    done
+
+    random=$remainder
 	else
-		randomDict=$forceDict;
+		dict=$forceDict
+    random=$((random % ${dicts[$dict,1]}))
 	fi;
 
-	getRandomWordFromDict $randomDict
+	getNthWordFromDict $dict $random
 }
 
 # get $1 random words, separated by $2 (needs totalWordCount from getTotalWordCount())
